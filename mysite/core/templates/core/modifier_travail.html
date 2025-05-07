@@ -1,0 +1,236 @@
+{% extends 'core/baseEnseignant.html' %}
+
+{% block content %}
+
+<style>
+    .form-card {
+        border: none;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    }
+    
+    .card-header-primary {
+        background: linear-gradient(135deg, #01579B 0%, #0288D1 100%);
+        padding: 1.5rem;
+        border-bottom: none;
+    }
+    
+    .form-label {
+        font-weight: 500;
+        color: #01579B;
+        margin-bottom: 0.5rem;
+    }
+    
+    .form-control, .form-select {
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+        border: 1px solid #e0e0e0;
+        transition: all 0.3s;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: #0288D1;
+        box-shadow: 0 0 0 0.2rem rgba(2, 136, 209, 0.15);
+    }
+    
+    textarea.form-control {
+        min-height: 120px;
+    }
+    
+    .btn-modern {
+        border-radius: 50px;
+        padding: 0.6rem 1.5rem;
+        font-weight: 500;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s;
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, #01579B 0%, #0288D1 100%);
+        border: none;
+    }
+    
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+    
+    .btn-secondary {
+        background-color: #f8f9fa;
+        color: #01579B;
+        border: 1px solid #e0e0e0;
+    }
+    
+    .btn-secondary:hover {
+        background-color: #e9ecef;
+        color: #01416b;
+    }
+    
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-title {
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid #f0f0f0;
+    }
+    
+    .icon-title {
+        margin-right: 0.75rem;
+    }
+    
+    /* Style personnalisé pour les champs du formulaire */
+    .form-control-file {
+        padding: 0.5rem;
+    }
+    
+    /* Style pour le champ datetime-local */
+    .datetime-input {
+        position: relative;
+    }
+    
+    .datetime-input::before {
+        content: "\f073";
+        font-family: "Font Awesome 5 Free";
+        font-weight: 900;
+        position: absolute;
+        right: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #0288D1;
+        pointer-events: none;
+    }
+</style>
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="form-card">
+                <div class="card-header-primary">
+                    <h3 class="mb-0 text-white">
+                        <i class="fas fa-edit icon-title"></i>Modifier le travail - {{ travail.titre }}
+                    </h3>
+                </div>
+                
+                <div class="card-body p-4">
+                    <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        
+                        <h5 class="form-title">Informations du travail</h5>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="id_titre" class="form-label">Titre</label>
+                                    <input type="text" class="form-control" id="id_titre" name="titre" 
+                                           value="{{ form.titre.value }}" required>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="id_typeT" class="form-label">Type de travail</label>
+                                    <select class="form-select" id="id_typeT" name="typeT" required>
+                                        {% for value, display in form.fields.typeT.choices %}
+                                            <option value="{{ value }}" {% if form.typeT.value == value %}selected{% endif %}>
+                                                {{ display }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="id_description" class="form-label">Description</label>
+                            <textarea class="form-control" id="id_description" name="description" 
+                                      rows="5" required>{{ form.description.value }}</textarea>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="id_date_limite" class="form-label">Date limite</label>
+                                    <div class="datetime-input">
+                                        <input type="datetime-local" class="form-control" id="id_date_limite" 
+                                               name="date_limite" value="{{ form.date_limite.value|date:'Y-m-d\TH:i' }}" required>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="id_statut" class="form-label">Statut</label>
+                                    <select class="form-select" id="id_statut" name="statut" required>
+                                        {% for value, display in form.fields.statut.choices %}
+                                            <option value="{{ value }}" {% if form.statut.value == value %}selected{% endif %}>
+                                                {{ display }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Fichier actuel</label>
+                            {% if travail.fichier %}
+                                <div class="d-flex align-items-center">
+                                    <a href="{{ travail.fichier.url }}" target="_blank" class="text-primary me-3">
+                                        <i class="fas fa-file-alt me-1"></i> {{ travail.fichier.name|cut:"travaux/" }}
+                                    </a>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="clear_fichier" name="fichier-clear">
+                                        <label class="form-check-label text-danger" for="clear_fichier">
+                                            Supprimer le fichier
+                                        </label>
+                                    </div>
+                                </div>
+                            {% else %}
+                                <p class="text-muted">Aucun fichier actuellement</p>
+                            {% endif %}
+                            
+                            <div class="mt-2">
+                                <label for="id_fichier" class="form-label">Nouveau fichier (optionnel)</label>
+                                <input type="file" class="form-control-file" id="id_fichier" name="fichier">
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between align-items-center mt-5 pt-3 border-top">
+                            <a href="{% url 'detail_cours' cours.idc %}" class="btn btn-secondary btn-modern">
+                                <i class="fas fa-times me-2"></i>Annuler
+                            </a>
+                            <button type="submit" class="btn btn-primary btn-modern">
+                                <i class="fas fa-save me-2"></i>Enregistrer les modifications
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Validation du formulaire
+(function() {
+    'use strict';
+    window.addEventListener('load', function() {
+        var forms = document.getElementsByClassName('needs-validation');
+        var validation = Array.prototype.filter.call(forms, function(form) {
+            form.addEventListener('submit', function(event) {
+                if (form.checkValidity() === false) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    }, false);
+})();
+</script>
+
+{% endblock %}

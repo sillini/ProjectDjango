@@ -1,0 +1,360 @@
+{% extends 'core/baselogin.html' %}
+
+{% block title %}Créer un compte{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-lg border-0">
+                <div class="card-header text-white" style="background-color: #01579B;">
+                    <h3 class="mb-0 text-center">
+                        <i class="fas fa-user-plus me-2"></i>Créer un compte
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                  <form method="post" action="{% url 'register' %}" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="row g-3">
+                            <!-- Type de compte - Toujours visible -->
+                            <div class="col-12">
+                                <label for="id_type" class="form-label">
+                                    <i class="fas fa-user-tag me-2"></i>Type de compte*
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-user-cog"></i></span>
+                                    <select class="form-select" id="id_type" name="type" required>
+                                        <option value="" selected disabled>Sélectionnez...</option>
+                                        <option value="etudiant">Étudiant</option>
+                                        <option value="enseignant">Enseignant</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Conteneur pour les champs conditionnels -->
+                            <div id="form-fields-container" style="display: none;">
+                                <!-- Spécialité (visible pour tous) -->
+                                <div class="col-md-6" id="specialite-field">
+                                    <label for="id_specialite" class="form-label">
+                                        <i class="fas fa-graduation-cap me-2"></i>Spécialité*
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-briefcase"></i></span>
+                                        <select class="form-select" id="id_specialite" name="specialite" >
+                                            <option value="" selected disabled>Sélectionnez...</option>
+                                            <option value="info">Informatique</option>
+                                            <option value="med">Médecine</option>
+                                            <option value="ing">Ingénierie</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <!-- Nom complet (visible pour tous) -->
+                                <div class="col-12">
+                                    <label for="id_nom" class="form-label">
+                                        <i class="fas fa-id-card me-2"></i>Nom complet*
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                        <input type="text" class="form-control" id="id_nom" name="nom" required>
+                                    </div>
+                                </div>
+                                
+                                <!-- Email (visible pour tous) -->
+                                <div class="col-12">
+                                    <label for="id_email" class="form-label">
+                                        <i class="fas fa-envelope me-2"></i>Email*
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-at"></i></span>
+                                        <input type="email" 
+                                               class="form-control" 
+                                               id="id_email" 
+                                               name="email" 
+                                               required
+                                               placeholder="exemple@domaine.com">
+                                    </div>
+                                    <small class="text-muted ms-2">Nous ne partagerons jamais votre email avec des tiers</small>
+                                </div>
+                                
+                                <!-- Mot de passe (visible pour tous) -->
+                                <div class="col-12 mb-3">
+                                    <label for="id_motdepasse" class="form-label">
+                                        <i class="fas fa-key me-2"></i>Mot de passe*
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                        <input type="password" 
+                                               class="form-control" 
+                                               id="id_motdepasse" 
+                                               name="motdepasse" 
+                                               required
+                                               pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
+                                               minlength="8"
+                                               placeholder="8 caractères minimum">
+                                        <button class="btn btn-outline-secondary toggle-password" type="button">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
+                                    <div class="password-strength mt-2">
+                                        <div class="progress" style="height: 5px;">
+                                            <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+                                        </div>
+                                        <small class="text-muted">
+                                            <span id="password-strength-text">Faible</span>
+                                            <ul class="list-unstyled mt-1" id="password-requirements">
+                                                <li class="text-danger"><i class="fas fa-times-circle"></i> 8 caractères minimum</li>
+                                                <li class="text-danger"><i class="fas fa-times-circle"></i> 1 majuscule</li>
+                                                <li class="text-danger"><i class="fas fa-times-circle"></i> 1 chiffre</li>
+                                            </ul>
+                                        </small>
+                                    </div>
+                                </div>
+
+                                <!-- Confirmation mot de passe (visible pour tous) -->
+                                <div class="col-12 mb-4">
+                                    <label for="id_confirm_mdp" class="form-label">
+                                        <i class="fas fa-key me-2"></i>Confirmer le mot de passe*
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                        <input type="password" 
+                                               class="form-control" 
+                                               id="id_confirm_mdp" 
+                                               name="confirm_mdp" 
+                                               required
+                                               placeholder="Confirmez votre mot de passe">
+                                        <button class="btn btn-outline-secondary toggle-password" type="button">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
+                                    <div class="invalid-feedback" id="password-match-feedback">
+                                        Les mots de passe ne correspondent pas
+                                    </div>
+                                </div>
+                                
+                                <!-- Niveau (visible seulement pour étudiant) -->
+                                <div class="col-md-6" id="niveau-field" style="display: none;">
+                                    <label for="id_niveau" class="form-label">
+                                        <i class="fas fa-layer-group me-2"></i>Niveau
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-signal"></i></span>
+                                        <input type="text" class="form-control" id="id_niveau" name="niveau">
+                                    </div>
+                                </div>
+                                
+                                <!-- CV (visible seulement pour enseignant) -->
+                                <div class="col-md-6" id="cv-field" style="display: none;">
+                                    <label for="id_cv" class="form-label">
+                                        <i class="fas fa-file-pdf me-2"></i>CV (PDF)
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-file-upload"></i></span>
+                                        <input class="form-control" type="file" id="id_cv" name="cv" accept=".pdf">
+                                    </div>
+                                </div>
+                                
+                                <!-- Spécialisation (visible seulement pour enseignant) -->
+                                <div class="col-12" id="specialisation-field" style="display: none;">
+                                    <label for="id_specialisation" class="form-label">
+                                        <i class="fas fa-star me-2"></i>Spécialisation
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-clipboard-list"></i></span>
+                                        <textarea class="form-control" id="id_specialisation" name="specialisation" rows="3"></textarea>
+                                    </div>
+                                </div>
+                                
+                                <!-- Bouton de soumission (visible pour tous après sélection) -->
+                                <div class="col-12 mt-4">
+                                    <button type="submit" class="btn w-100 py-3" style="background-color: #01579B; color: white; font-size: 1.1rem;">
+                                        <i class="fas fa-user-plus me-2"></i>Créer mon compte
+                                    </button>
+                                </div>
+                                
+                                <!-- Lien de connexion (visible pour tous) -->
+                                <div class="col-12 text-center mt-3">
+                                    <p class="mb-0">
+                                        <i class="fas fa-sign-in-alt me-1"></i>Déjà un compte? 
+                                        <a href="{% url 'accueil' %}" style="color: #01579B;">
+                                            <i class="fas fa-arrow-right me-1"></i>Se connecter
+                                        </a>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* (Conserver tous les styles CSS précédents) */
+    .form-label {
+        font-weight: 500;
+        color: #01579B;
+        font-size: 1.05rem;
+    }
+    
+    .form-control, .form-select {
+        border-radius: 8px;
+        padding: 10px 15px;
+        border: 1px solid #b3e5fc;
+        transition: all 0.3s;
+    }
+    
+    /* (Le reste des styles reste identique) */
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const typeSelect = document.getElementById('id_type');
+    const formFieldsContainer = document.getElementById('form-fields-container');
+    const niveauField = document.getElementById('niveau-field');
+    const cvField = document.getElementById('cv-field');
+    const specialisationField = document.getElementById('specialisation-field');
+    const specialitefield  = document.getElementById('specialite-field');
+
+    // Gestion de l'affichage des champs selon le type de compte
+    typeSelect.addEventListener('change', function() {
+        if (this.value === 'etudiant') {
+            formFieldsContainer.style.display = 'block';
+            niveauField.style.display = 'block';
+            cvField.style.display = 'none';
+            specialitefield.style.display='block'
+            specialisationField.style.display = 'none';
+            document.getElementById('id_specialite').value = '';
+            document.getElementById('id_nom').value = '';
+            document.getElementById('id_email').value = '';
+            document.getElementById('id_motdepasse').value = '';
+            document.getElementById('id_confirm_mdp').value = '';
+        } 
+        else if (this.value === 'enseignant') {
+            specialitefield.style.display='none'
+            formFieldsContainer.style.display = 'block';
+            niveauField.style.display = 'none';
+            cvField.style.display = 'block';
+            specialisationField.style.display = 'block';
+            document.getElementById('id_specialite').value = '';
+            document.getElementById('id_nom').value = '';
+            document.getElementById('id_email').value = '';
+            document.getElementById('id_motdepasse').value = '';
+            document.getElementById('id_confirm_mdp').value = '';
+        } 
+        else {
+            formFieldsContainer.style.display = 'none';
+        }
+    });
+
+    // (Conserver toutes les autres fonctions JavaScript précédentes)
+    // Validation email, mot de passe, etc.
+    document.getElementById('id_email').addEventListener('input', function() {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if(emailRegex.test(this.value)) {
+            this.classList.add('is-valid');
+            this.classList.remove('is-invalid');
+        } else {
+            this.classList.remove('is-valid');
+            this.classList.add('is-invalid');
+        }
+    });
+
+    // Fonction pour basculer la visibilité du mot de passe
+    document.querySelectorAll('.toggle-password').forEach(button => {
+        button.addEventListener('click', function() {
+            const input = this.closest('.input-group').querySelector('input');
+            const icon = this.querySelector('i');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
+            }
+        });
+    });
+
+    // Validation de la force du mot de passe
+    const passwordInput = document.getElementById('id_motdepasse');
+    const confirmInput = document.getElementById('id_confirm_mdp');
+    const strengthBar = document.querySelector('.password-strength .progress-bar');
+    const strengthText = document.getElementById('password-strength-text');
+    const requirements = document.getElementById('password-requirements').querySelectorAll('li');
+
+    passwordInput.addEventListener('input', function() {
+        const password = this.value;
+        let strength = 0;
+        
+        // Vérification des exigences
+        const hasMinLength = password.length >= 8;
+        const hasUpperCase = /[A-Z]/.test(password);
+        const hasNumber = /\d/.test(password);
+        const hasSpecialChar = /[^A-Za-z0-9]/.test(password);
+        
+        // Mise à jour des icônes d'exigences
+        requirements[0].className = hasMinLength ? 'text-success' : 'text-danger';
+        requirements[0].innerHTML = hasMinLength ? 
+            '<i class="fas fa-check-circle"></i> 8 caractères minimum' : 
+            '<i class="fas fa-times-circle"></i> 8 caractères minimum';
+            
+        requirements[1].className = hasUpperCase ? 'text-success' : 'text-danger';
+        requirements[1].innerHTML = hasUpperCase ? 
+            '<i class="fas fa-check-circle"></i> 1 majuscule' : 
+            '<i class="fas fa-times-circle"></i> 1 majuscule';
+            
+        requirements[2].className = hasNumber ? 'text-success' : 'text-danger';
+        requirements[2].innerHTML = hasNumber ? 
+            '<i class="fas fa-check-circle"></i> 1 chiffre' : 
+            '<i class="fas fa-times-circle"></i> 1 chiffre';
+        
+        // Calcul de la force
+        if (password.length > 0) strength += 20;
+        if (hasMinLength) strength += 20;
+        if (hasUpperCase) strength += 20;
+        if (hasNumber) strength += 20;
+        if (hasSpecialChar) strength += 20;
+        
+        // Mise à jour de la barre de progression
+        strengthBar.style.width = strength + '%';
+        
+        // Mise à jour du texte et de la couleur
+        if (strength < 40) {
+            strengthBar.className = 'progress-bar bg-danger';
+            strengthText.textContent = 'Faible';
+        } else if (strength < 80) {
+            strengthBar.className = 'progress-bar bg-warning';
+            strengthText.textContent = 'Moyen';
+        } else {
+            strengthBar.className = 'progress-bar bg-success';
+            strengthText.textContent = 'Fort';
+        }
+    });
+
+    // Validation de la correspondance des mots de passe
+    confirmInput.addEventListener('input', function() {
+        if (this.value !== passwordInput.value) {
+            this.classList.add('is-invalid');
+            document.getElementById('password-match-feedback').style.display = 'block';
+        } else {
+            this.classList.remove('is-invalid');
+            document.getElementById('password-match-feedback').style.display = 'none';
+        }
+    });
+
+    // Validation à la soumission
+    document.getElementById('registerForm').addEventListener('submit', function(e) {
+        if (passwordInput.value !== confirmInput.value) {
+            e.preventDefault();
+            confirmInput.classList.add('is-invalid');
+            document.getElementById('password-match-feedback').style.display = 'block';
+            confirmInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            confirmInput.focus();
+        }
+    });
+});
+</script>
+{% endblock %}

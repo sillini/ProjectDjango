@@ -1,0 +1,164 @@
+{% extends 'core/baseEnseignant.html' %}
+{% block title %}Modifier {{ cours.titre }}{% endblock %}
+
+{% block content %}
+<style>
+    .form-container {
+        background-color: #FFFFFF;
+        border-radius: 10px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+        border: 1px solid #E0E0E0;
+    }
+    .form-header {
+        background: linear-gradient(135deg, #01579B 0%, #0288D1 100%);
+        color: white;
+        padding: 1.5rem;
+        border-bottom: 3px solid rgba(255, 255, 255, 0.1);
+    }
+    .form-body {
+        padding: 2rem;
+    }
+    .form-label {
+        font-weight: 500;
+        color: #01579B;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+    }
+    .form-control, .form-select {
+        border-radius: 8px;
+        border: 1px solid #B3E5FC;
+        padding: 0.75rem 1rem;
+        transition: all 0.3s;
+    }
+    .form-control:focus, .form-select:focus {
+        border-color: #0288D1;
+        box-shadow: 0 0 0 0.2rem rgba(2, 136, 209, 0.25);
+    }
+    .btn-submit {
+        background-color: #01579B;
+        color: white;
+        border-radius: 30px;
+        padding: 0.75rem 2rem;
+        font-weight: 500;
+        transition: all 0.3s;
+        border: none;
+        display: inline-flex;
+        align-items: center;
+    }
+    .btn-submit:hover {
+        background-color: #0288D1;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(1, 87, 155, 0.2);
+    }
+    .btn-cancel {
+        border-radius: 30px;
+        padding: 0.75rem 2rem;
+        transition: all 0.3s;
+        display: inline-flex;
+        align-items: center;
+    }
+    .course-info {
+        background-color: #E1F5FE;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+    }
+</style>
+
+<div class="container py-5">
+    <div class="form-container">
+        <div class="form-header">
+            <div class="d-flex align-items-center">
+                <i class="fas fa-edit fa-2x me-3"></i>
+                <div>
+                    <h2 class="mb-1">Modifier le cours</h2>
+                    <p class="mb-0 opacity-75">{{ cours.titre }}</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="form-body">
+            <div class="course-info">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-info-circle me-2 text-primary"></i>
+                    <p class="mb-0">Modifiez les informations de base du cours. Les sections peuvent être modifiées séparément.</p>
+                </div>
+            </div>
+
+            <form method="POST">
+                {% csrf_token %}
+                
+                <div class="row g-3 mb-4">
+                    <!-- Titre -->
+                    <div class="col-md-12">
+                        <label class="form-label">
+                            <i class="fas fa-heading me-2"></i>Titre du cours
+                        </label>
+                        {{ form.titre }}
+                        {% if form.titre.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.titre.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Description -->
+                    <div class="col-md-12">
+                        <label class="form-label">
+                            <i class="fas fa-align-left me-2"></i>Description
+                        </label>
+                        {{ form.description }}
+                        <small class="text-muted d-block mt-1">
+                            <i class="fas fa-lightbulb me-1"></i>Décrivez les objectifs et le contenu principal
+                        </small>
+                        {% if form.description.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.description.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Statut -->
+                    <div class="col-md-6">
+                        <label class="form-label">
+                            <i class="fas fa-tag me-2"></i>Statut
+                        </label>
+                        {{ form.statut }}
+                        {% if form.statut.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.statut.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="d-flex justify-content-between mt-4 pt-3 border-top">
+                    <a href="{% url 'detail_cours' cours.idc %}" class="btn btn-outline-secondary btn-cancel">
+                        <i class="fas fa-arrow-left me-2"></i>Annuler
+                    </a>
+                    <button type="submit" class="btn btn-submit">
+                        <i class="fas fa-save me-2"></i>Enregistrer les modifications
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Animation d'entrée
+    const formContainer = document.querySelector('.form-container');
+    formContainer.style.opacity = '0';
+    formContainer.style.transform = 'translateY(20px)';
+    
+    setTimeout(() => {
+        formContainer.style.transition = 'all 0.4s ease';
+        formContainer.style.opacity = '1';
+        formContainer.style.transform = 'translateY(0)';
+    }, 100);
+});
+</script>
+{% endblock %}

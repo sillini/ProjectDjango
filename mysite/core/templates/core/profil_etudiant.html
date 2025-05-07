@@ -1,0 +1,110 @@
+{% extends 'core/baseEtudiant.html' %}
+{% block title %}Profil Étudiant{% endblock %}
+
+{% block content %}
+<style>
+    .card-header-custom {
+        background-color: #2E7D32 !important;
+        color: white !important;
+    }
+    .card-custom {
+        background-color: #E8F5E9 !important;
+        border: 1px solid #C8E6C9;
+    }
+    .btn-custom {
+        background-color: #2E7D32;
+        border-color: #2E7D32;
+    }
+    .btn-custom:hover {
+        background-color: #4CAF50;
+        border-color: #4CAF50;
+    }
+    .info-label {
+        font-weight: 600;
+        color: #2E7D32;
+    }
+</style>
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-lg card-custom">
+                <div class="card-header card-header-custom">
+                    <h4 class="mb-0"><i class="fas fa-user-graduate me-2"></i>Mon profil étudiant</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {% csrf_token %}
+                        
+                        <!-- Section Informations de base -->
+                        <div class="mb-4">
+                            <h5 class="text-success mb-3"><i class="fas fa-user-circle me-2"></i>Informations personnelles</h5>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label info-label"><i class="fas fa-user me-2"></i>Nom complet</label>
+                                    <input type="text" class="form-control" name="nom" value="{{ utilisateur.nom }}" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label info-label"><i class="fas fa-envelope me-2"></i>Email</label>
+                                    <input type="email" class="form-control" name="email" value="{{ utilisateur.email }}" required>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Section Mot de passe -->
+                        <div class="mb-4">
+                            <h5 class="text-success mb-3"><i class="fas fa-lock me-2"></i>Changer le mot de passe</h5>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label info-label"><i class="fas fa-key me-2"></i>Nouveau mot de passe</label>
+                                    <input type="password" class="form-control" name="motdepasse" placeholder="Laisser vide si inchangé">
+                                    <small class="text-muted">Minimum 8 caractères</small>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label info-label"><i class="fas fa-key me-2"></i>Confirmation</label>
+                                    <input type="password" class="form-control" name="confirm_motdepasse" placeholder="Confirmer le nouveau mot de passe">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Section Informations académiques -->
+                        <div class="mb-4">
+                            <h5 class="text-success mb-3"><i class="fas fa-graduation-cap me-2"></i>Informations académiques</h5>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label info-label"><i class="fas fa-book me-2"></i>Spécialité</label>
+                                    <select class="form-select" name="specialite">
+                                        {% for value, display in utilisateur.SPECIALITE_CHOICES %}
+                                            <option value="{{ value }}" {% if utilisateur.specialite == value %}selected{% endif %}>
+                                                {{ display }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label info-label"><i class="fas fa-layer-group me-2"></i>Niveau</label>
+                                    <input type="text" class="form-control" name="niveau" value="{{ utilisateur.niveau|default_if_none:'' }}">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{% url 'etudiant_dashboard' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Retour
+                            </a>
+                            <button type="submit" class="btn btn-custom text-white">
+                                <i class="fas fa-save me-2"></i>Enregistrer les modifications
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+        
+        </div>
+    </div>
+</div>
+{% endblock %}

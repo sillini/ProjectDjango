@@ -1,0 +1,231 @@
+{% extends 'core/baseEnseignant.html' %}
+
+{% block content %}
+
+<style>
+    .form-card {
+        border: none;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    }
+    
+    .card-header-primary {
+        background: linear-gradient(135deg, #01579B 0%, #0288D1 100%);
+        padding: 1.5rem;
+        border-bottom: none;
+    }
+    
+    .form-label {
+        font-weight: 500;
+        color: #01579B;
+        margin-bottom: 0.5rem;
+    }
+    
+    .form-control, .form-select {
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+        border: 1px solid #e0e0e0;
+        transition: all 0.3s;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: #0288D1;
+        box-shadow: 0 0 0 0.2rem rgba(2, 136, 209, 0.15);
+    }
+    
+    textarea.form-control {
+        min-height: 120px;
+    }
+    
+    .btn-modern {
+        border-radius: 50px;
+        padding: 0.6rem 1.5rem;
+        font-weight: 500;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s;
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, #01579B 0%, #0288D1 100%);
+        border: none;
+    }
+    
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+    
+    .btn-secondary {
+        background-color: #f8f9fa;
+        color: #01579B;
+        border: 1px solid #e0e0e0;
+    }
+    
+    .btn-secondary:hover {
+        background-color: #e9ecef;
+        color: #01416b;
+    }
+    
+    .file-input-label {
+        display: block;
+        padding: 1rem;
+        border: 2px dashed #e0e0e0;
+        border-radius: 8px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    
+    .file-input-label:hover {
+        border-color: #0288D1;
+        background-color: #f5fbff;
+    }
+    
+    .file-input-text {
+        color: #757575;
+        font-size: 0.9rem;
+    }
+    
+    .file-input-icon {
+        font-size: 1.5rem;
+        color: #0288D1;
+        margin-bottom: 0.5rem;
+    }
+    
+    .datetime-input {
+        position: relative;
+    }
+    
+    .datetime-input::before {
+        content: "\f073";
+        font-family: "Font Awesome 5 Free";
+        font-weight: 900;
+        position: absolute;
+        right: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #0288D1;
+        pointer-events: none;
+    }
+    
+    .form-title {
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid #f0f0f0;
+    }
+    
+    .icon-title {
+        margin-right: 0.75rem;
+    }
+</style>
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="form-card">
+                <div class="card-header-primary">
+                    <h3 class="mb-0 text-white">
+                        <i class="fas fa-plus-circle icon-title"></i>Ajouter un travail pour {{ cours.titre }}
+                    </h3>
+                </div>
+                
+                <div class="card-body p-4">
+                    <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        
+                        <h5 class="form-title">Détails du travail</h5>
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-6 mb-3">
+                                <label for="typeT" class="form-label">Type de travail</label>
+                                <select class="form-select" id="typeT" name="typeT" required>
+                                    {% for value, display in type_choices %}
+                                        <option value="{{ value }}">{{ display }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="date_limite" class="form-label">Date limite</label>
+                                <div class="datetime-input">
+                                    <input type="datetime-local" class="form-control" id="date_limite" name="date_limite" required>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="titre" class="form-label">Titre du travail</label>
+                            <input type="text" class="form-control" id="titre" name="titre" placeholder="Ex: TP sur les algorithmes" required>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="description" class="form-label">Description détaillée</label>
+                            <textarea class="form-control" id="description" name="description" rows="5" placeholder="Décrivez les consignes et les attentes..." required></textarea>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="form-label">Fichier associé (optionnel)</label>
+                            <label for="fichier" class="file-input-label">
+                                <div class="file-input-icon">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                </div>
+                                <div class="file-input-text">
+                                    Cliquez pour téléverser un fichier<br>
+                                    <small>Formats acceptés: PDF, DOCX, PPTX, ZIP</small>
+                                </div>
+                                <input type="file" class="d-none" id="fichier" name="fichier">
+                            </label>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between align-items-center mt-5 pt-3 border-top">
+                            <a href="{% url 'detail_cours' cours.idc %}" class="btn btn-secondary btn-modern">
+                                <i class="fas fa-times me-2"></i>Annuler
+                            </a>
+                            <button type="submit" class="btn btn-primary btn-modern">
+                                <i class="fas fa-save me-2"></i>Enregistrer le travail
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Script pour afficher le nom du fichier sélectionné
+document.getElementById('fichier').addEventListener('change', function(e) {
+    const fileName = e.target.files[0] ? e.target.files[0].name : 'Aucun fichier sélectionné';
+    document.querySelector('.file-input-text').innerHTML = fileName + 
+        '<br><small>' + (e.target.files[0] ? formatFileSize(e.target.files[0].size) : '') + '</small>';
+});
+
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+// Validation du formulaire
+(function() {
+    'use strict';
+    window.addEventListener('load', function() {
+        var forms = document.getElementsByClassName('needs-validation');
+        var validation = Array.prototype.filter.call(forms, function(form) {
+            form.addEventListener('submit', function(event) {
+                if (form.checkValidity() === false) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    }, false);
+})();
+</script>
+
+{% endblock %}

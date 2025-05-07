@@ -1,0 +1,205 @@
+{% extends 'core/baseEtudiant.html' %}
+{% block title %}Cours Disponibles{% endblock %}
+
+{% block content %}
+<style>
+    .card-cours {
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        border: none;
+        border-radius: 12px;
+        overflow: hidden;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+    .card-cours:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 14px 28px rgba(0,0,0,0.1), 0 10px 10px rgba(0,0,0,0.08);
+    }
+    .card-img-container {
+        height: 180px;
+        background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+    }
+    .card-img-container i {
+        font-size: 4.5rem;
+        color: #2E7D32;
+        opacity: 0.8;
+    }
+    .badge-specialite {
+        background-color: #2E7D32;
+        font-size: 0.8rem;
+        font-weight: 500;
+        padding: 5px 10px;
+        border-radius: 50px;
+    }
+    .btn-acceder {
+        background-color: #2E7D32;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        font-weight: 500;
+        letter-spacing: 0.5px;
+        transition: all 0.3s;
+    }
+    .btn-acceder:hover {
+        background-color: #1B5E20;
+        transform: translateY(-2px);
+    }
+    .card-body {
+        padding: 1.5rem;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+    }
+    .card-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+        color: #263238;
+    }
+    .card-text {
+        color: #546E7A;
+        flex-grow: 1;
+        margin-bottom: 1rem;
+    }
+    .enseignant-info {
+        display: flex;
+        align-items: center;
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 1px solid #EEEEEE;
+    }
+    .enseignant-info i {
+        margin-right: 10px;
+        color: #2E7D32;
+    }
+    .enseignant-nom {
+        font-weight: 500;
+        color: #37474F;
+        font-size: 0.95rem;
+    }
+    .page-header {
+        margin-bottom: 2.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #E0E0E0;
+    }
+    .page-title {
+        font-weight: 600;
+        color: #263238;
+        font-size: 1.8rem;
+    }
+    .empty-state {
+        padding: 3rem;
+        text-align: center;
+        background-color: #FAFAFA;
+        border-radius: 12px;
+    }
+    .empty-state i {
+        font-size: 4rem;
+        color: #BDBDBD;
+        margin-bottom: 1.5rem;
+    }
+    .empty-state h4 {
+        color: #757575;
+        margin-bottom: 1rem;
+    }
+</style>
+
+<div class="container py-5">
+    <div class="page-header">
+        <h1 class="page-title"><i class="fas fa-book-open me-3"></i>Cours Disponibles</h1>
+    </div>
+    
+    <div class="row g-4">
+        {% if cours_list %}
+            {% for cours in cours_list %}
+            <div class="col-lg-4 col-md-6">
+                <div class="card card-cours shadow-sm">
+                    <div class="card-img-container">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <h3 class="card-title">{{ cours.titre }}</h3>
+                            <span class="badge badge-specialite">
+                                {{ cours.utilisateur.get_specialite_display }}
+                            </span>
+                        </div>
+                        <p class="card-text">{{ cours.description|truncatewords:25 }}</p>
+                        
+                        <div class="enseignant-info">
+                            <i class="fas fa-chalkboard-teacher"></i>
+                            <span class="enseignant-nom">Enseignant: {{ cours.utilisateur.nom }}</span>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-white border-0 pt-0 pb-3">
+                        <button class="btn btn-acceder w-100" 
+                                data-bs-toggle="modal" 
+                                data-bs-target="#accesModal"
+                                data-cours-id="{{ cours.idc }}">
+                            <i class="fas fa-lock-open me-2"></i> Accéder au cours
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12">
+                <div class="empty-state">
+                    <i class="fas fa-book"></i>
+                    <h4>Aucun nouveau cours disponible</h4>
+                    <p class="text-muted">Revenez plus tard pour découvrir nos nouvelles formations.</p>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Modal d'accès -->
+<div class="modal fade" id="accesModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg">
+      <form method="POST" action="" id="accesForm">
+        {% csrf_token %}
+        <div class="modal-header border-0">
+          <h5 class="modal-title fw-bold"><i class="fas fa-key me-2"></i>Accès au cours</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body py-4">
+          <p class="mb-4">Pour accéder à ce cours, veuillez entrer la clé d'administration :</p>
+          <div class="mb-3">
+            <div class="input-group">
+              <span class="input-group-text bg-light"><i class="fas fa-lock"></i></span>
+              <input type="password" class="form-control form-control-lg" name="cle_admin" placeholder="Clé d'accès" required>
+            </div>
+            <small class="text-muted mt-1 d-block">Utilisez la clé fournie par votre administrateur</small>
+          </div>
+        </div>
+        <div class="modal-footer border-0">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn btn-success px-4">Valider</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+// Gestion du modal d'accès
+document.addEventListener('DOMContentLoaded', function() {
+    const accesForm = document.getElementById('accesForm');
+    const accesModal = document.getElementById('accesModal');
+    
+    accesModal.addEventListener('show.bs.modal', function(event) {
+        const button = event.relatedTarget;
+        const coursId = button.getAttribute('data-cours-id');
+        accesForm.action = `/etudiant/acceder-cours/${coursId}/`;
+    });
+});
+</script>
+{% endblock %}
