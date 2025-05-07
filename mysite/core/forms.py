@@ -83,3 +83,32 @@ class TravailForm(forms.ModelForm):
             'date_limite': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
             'description': forms.Textarea(attrs={'rows': 4}),
         }
+from django import forms
+from .models import Soumission
+
+class SoumissionForm(forms.ModelForm):
+    valider = forms.BooleanField(
+        required=True,
+        label="Je valide ma soumission",
+        widget=forms.CheckboxInput(attrs={'class': 'form-check-input'})
+    )
+    
+    class Meta:
+        model = Soumission
+        fields = ['fichier']
+        widgets = {
+            'fichier': forms.FileInput(attrs={
+                'class': 'form-control',
+                'accept': '.pdf,.doc,.docx,.zip,.rar'
+            })
+        }
+    
+    def clean_fichier(self):
+        fichier = self.cleaned_data.get('fichier')
+        if fichier:
+            if fichier.size > 10 * 1024 * 1024:
+                raise forms.ValidationError("Le fichier ne doit pas dépasser 10MB")
+            ext = fichier.name.split('.')[-1].lower()
+            if ext not in ['pdf', 'doc', 'docx', 'zip', 'rar']:
+                raise forms.ValidationError("Format de fichier non supporté")
+        return fichier

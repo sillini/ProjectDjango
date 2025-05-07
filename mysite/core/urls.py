@@ -27,5 +27,7 @@ path('cours/<str:cours_id>/supprimer/', views.supprimer_cours, name='supprimer_c
  path('etudiant/profil/', views.profil_etudiant, name='profil_etudiant'),
 path('etudiant/cours-disponibles/', views.cours_disponibles, name='cours_disponibles')
 ,    path('etudiant/acceder-cours/<str:cours_id>/', views.acceder_cours, name='acceder_cours'),
-   
+    path('etudiant/mes-coursEtudiant/', views.mes_coursEtudiant, name='mes_coursEtudiant'),
+   path('etudiant/cours/<str:cours_id>/', views.detail_cours_etudiant, name='detail_cours_etudiant'),
+    path('etudiant/soumettre-travail/<str:travail_id>/', views.soumettre_travail, name='soumettre_travail'),
 ]

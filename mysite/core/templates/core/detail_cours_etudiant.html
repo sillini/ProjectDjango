@@ -1,0 +1,119 @@
+{% extends 'core/baseEtudiant.html' %}
+{% block title %}{{ cours.titre }}{% endblock %}
+
+{% block content %}
+<style>
+    .cours-header {
+        background: linear-gradient(135deg, #2E7D32, #4CAF50);
+        color: white;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    .section-item {
+        border-left: 3px solid #4CAF50;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        background: white;
+        border-radius: 5px;
+    }
+    .travail-item {
+        border-left: 3px solid #FF9800;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+        background: white;
+        border-radius: 5px;
+    }
+    .fichier-link {
+        color: #2E7D32;
+        font-weight: 500;
+    }
+    .date-limite {
+        font-size: 0.9rem;
+    }
+    .btn-soumettre {
+        background: #2E7D32;
+        color: white;
+    }
+</style>
+
+<div class="container py-4">
+    <!-- En-tête du cours -->
+    <div class="cours-header shadow-sm">
+        <h1>{{ cours.titre }}</h1>
+        <p class="mb-0">{{ cours.description }}</p>
+    </div>
+
+    <!-- Sections du cours -->
+    <div class="mb-5">
+        <h3 class="mb-3"><i class="fas fa-book me-2"></i>Contenu du cours</h3>
+        
+        {% if sections %}
+            {% for section in sections %}
+            <div class="section-item shadow-sm">
+                <h4>{{ section.titre }}</h4>
+                <div class="mb-3">{{ section.contenu|linebreaks }}</div>
+                
+                {% if section.fichier %}
+                <a href="{{ section.fichier.url }}" class="fichier-link" target="_blank">
+                    <i class="fas fa-download me-1"></i>Télécharger le fichier
+                </a>
+                {% endif %}
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                Aucun contenu disponible pour le moment
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Travaux à rendre -->
+    <div class="mb-4">
+        <h3 class="mb-3"><i class="fas fa-tasks me-2"></i>Travaux à rendre</h3>
+        
+        {% if travaux %}
+            {% for travail in travaux %}
+            <div class="travail-item shadow-sm">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h4 class="mb-0">{{ travail.titre }}</h4>
+                    <span class="badge bg-secondary">{{ travail.get_typeT_display }}</span>
+                </div>
+                
+                <p>{{ travail.description }}</p>
+                
+                {% if travail.fichier %}
+                <div class="mb-3">
+                    <a href="{{ travail.fichier.url }}" class="fichier-link" target="_blank">
+                        <i class="fas fa-download me-1"></i>Consignes du travail
+                    </a>
+                </div>
+                {% endif %}
+                
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="date-limite {% if travail.date_limite < now %}text-danger{% else %}text-success{% endif %}">
+                        <i class="fas fa-clock me-1"></i>
+                        À rendre avant le {{ travail.date_limite|date:"d/m/Y" }}
+                    </span>
+                    
+                    <a href="{% url 'soumettre_travail' travail.idT %}" 
+                       class="btn btn-soumettre btn-sm {% if travail.date_limite < now %}disabled{% endif %}">
+                        <i class="fas fa-upload me-1"></i>
+                        {% if travail.date_limite < now %}Temps écoulé{% else %}Soumettre{% endif %}
+                        
+                    </a>
+                    
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                Aucun travail à rendre pour le moment
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

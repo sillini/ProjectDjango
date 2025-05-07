@@ -694,3 +694,163 @@ def acceder_cours(request, cours_id):
     
     return redirect('cours_disponibles')
 
+
+
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.utils import timezone
+from .models import Cours, Section, Travail, Soumission, Utilisateur, SectionVue
+from .forms import SoumissionForm
+@login_required
+def detail_cours_etudiant(request, cours_id):
+    try:
+        etudiant = Utilisateur.objects.get(user=request.user, type='etudiant')
+        cours = get_object_or_404(Cours, idc=cours_id)
+        
+        if not etudiant.cours_inscrits.filter(idc=cours_id).exists():
+            messages.error(request, "Accès refusé : Vous n'êtes pas inscrit à ce cours")
+            return redirect('mes_cours')
+        
+        sections = cours.sections.filter(cache=False).order_by('idsec')
+        travaux = cours.travaux.filter(statut='actif').order_by('-date_creation')
+        
+        # Récupérer les soumissions existantes
+        soumissions = Soumission.objects.filter(
+            etudiant=etudiant,
+            travail__in=travaux
+        ).select_related('travail')
+        
+        # Créer un dictionnaire pour un accès facile
+        soumissions_dict = {s.travail.idT: s for s in soumissions}
+        
+        context = {
+            'cours': cours,
+            'sections': sections,
+            'travaux': travaux,
+            'soumissions': soumissions_dict,
+            'now': timezone.now()
+        }
+        return render(request, 'core/detail_cours_etudiant.html', context)
+        
+    except Utilisateur.DoesNotExist:
+        messages.error(request, "Accès réservé aux étudiants")
+        return redirect('accueil')
+import os
+from django.db import transaction
+from django.utils.safestring import mark_safe
+from django.contrib import messages
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.utils import timezone
+from .models import Soumission, Travail, Utilisateur
+from .forms import SoumissionForm
+@login_required
+def soumettre_travail(request, travail_id):
+    """
+    Vue pour soumettre un travail étudiant avec validation et gestion des fichiers
+    """
+    try:
+        # Récupération de l'étudiant et vérification des permissions
+        etudiant = Utilisateur.objects.get(user=request.user, type='etudiant')
+        travail = get_object_or_404(Travail, idT=travail_id, statut='actif')
+        
+        # Vérification que l'étudiant est inscrit au cours
+        if not etudiant.cours_inscrits.filter(idc=travail.cours.idc).exists():
+            messages.error(request, "Vous n'êtes pas autorisé à soumettre ce travail")
+            return redirect('mes_cours')
+            
+        # Vérification de la date limite
+        if travail.date_limite < timezone.now():
+            messages.error(request, "La date limite de soumission est dépassée")
+            return redirect('detail_cours_etudiant', cours_id=travail.cours.idc)
+        
+        # Récupération de la soumission existante si elle existe
+        soumission_existante = Soumission.objects.filter(
+            travail=travail,
+            etudiant=etudiant
+        ).first()
+
+        if request.method == 'POST':
+            form = SoumissionForm(request.POST, request.FILES)
+            
+            if form.is_valid():
+                # Validation de la case à cocher
+                if not form.cleaned_data.get('valider'):
+                    messages.error(request, "Vous devez confirmer la validation de votre travail")
+                else:
+                    try:
+                        # Création ou mise à jour de la soumission
+                        with transaction.atomic():
+                            if soumission_existante:
+                                soumission = soumission_existante
+                                ancien_fichier = soumission.fichier.path if soumission.fichier else None
+                            else:
+                                soumission = Soumission(travail=travail, etudiant=etudiant)
+                            
+                            soumission.fichier = form.cleaned_data['fichier']
+                            soumission.valide = True
+                            soumission.save()
+                            
+                            # Suppression de l'ancien fichier après sauvegarde réussie
+                            if soumission_existante and ancien_fichier:
+                                try:
+                                    os.remove(ancien_fichier)
+                                except OSError:
+                                    pass
+                            
+                            # Message de succès
+                            messages.success(
+                                request,
+                                mark_safe(
+                                    f"<i class='fas fa-check-circle me-2'></i>"
+                                    f"<strong>Soumission réussie !</strong><br>"
+                                    f"Votre travail <strong>{travail.titre}</strong> a été envoyé.<br>"
+                                    f"<small class='text-muted'>Soumis le {timezone.now().strftime('%d/%m/%Y à %H:%M')}</small>"
+                                )
+                            )
+                            return redirect('detail_cours_etudiant', cours_id=travail.cours.idc)
+                            
+                    except Exception as e:
+                        messages.error(request, f"Une erreur est survenue lors de l'enregistrement: {str(e)}")
+            else:
+                # Gestion des erreurs de formulaire
+                for field, errors in form.errors.items():
+                    for error in errors:
+                        messages.error(request, f"{field.capitalize()}: {error}")
+        else:
+            form = SoumissionForm()
+        
+        context = {
+            'travail': travail,
+            'form': form,
+            'soumission_existante': soumission_existante,
+            'now': timezone.now()
+        }
+        return render(request, 'core/soumettre_travail.html', context)
+        
+    except Utilisateur.DoesNotExist:
+        messages.error(request, "Accès réservé aux étudiants")
+        return redirect('accueil')
+    except Exception as e:
+        messages.error(request, f"Une erreur inattendue est survenue: {str(e)}")
+        return redirect('mes_cours')
+    
+@login_required
+def mes_coursEtudiant(request):
+    try:
+        etudiant = Utilisateur.objects.get(user=request.user, type='etudiant')
+        cours_inscrits = etudiant.cours_inscrits.all().select_related('utilisateur')
+        
+        for cours in cours_inscrits:
+            cours.progression_etudiant = cours.progression(etudiant)
+
+        context = {
+            'cours_inscrits': cours_inscrits,
+            'now': timezone.now()
+        }
+        return render(request, 'core/mes_coursEtudiant.html', context)
+
+    except Utilisateur.DoesNotExist:
+        messages.error(request, "Accès réservé aux étudiants.")
+        return redirect('accueil')

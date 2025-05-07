@@ -1,0 +1,96 @@
+{% extends 'core/baseEtudiant.html' %}
+{% block title %}Soumettre un travail{% endblock %}
+
+{% block content %}
+<style>
+    .card-soumission {
+        border-radius: 10px;
+        border: 1px solid #e0e0e0;
+    }
+    .card-header {
+        background-color: #2E7D32;
+        color: white;
+        border-radius: 10px 10px 0 0 !important;
+    }
+    .form-check-input:checked {
+        background-color: #2E7D32;
+        border-color: #2E7D32;
+    }
+    .validation-box {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+</style>
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card card-soumission shadow-sm">
+                <div class="card-header">
+                    <h3 class="mb-0"><i class="fas fa-upload me-2"></i>Soumettre votre travail</h3>
+                </div>
+                <div class="card-body">
+                    <h4 class="mb-3">{{ travail.titre }}</h4>
+                    
+                    <div class="alert alert-info mb-4">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Date limite :</strong> 
+                        {{ travail.date_limite|date:"d/m/Y à H:i" }}
+                        {% if travail.date_limite < now %}
+                            <span class="badge bg-danger ms-2">Dépassée</span>
+                        {% endif %}
+                    </div>
+                    
+                    <form method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="mb-4">
+                            <h5><i class="fas fa-cloud-upload-alt me-2"></i>Votre travail :</h5>
+                            {{ form.fichier }}
+                            {% if form.fichier.errors %}
+                                <div class="text-danger mt-2">
+                                    {{ form.fichier.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="validation-box mb-4">
+                            <h5><i class="fas fa-check-circle me-2"></i>Validation :</h5>
+                            <div class="form-check">
+                                {{ form.valider }}
+                                <label class="form-check-label" for="{{ form.valider.id_for_label }}">
+                                    Je certifie que ce travail est complet et prêt à être évalué
+                                </label>
+                            </div>
+                            {% if form.valider.errors %}
+                                <div class="text-danger mt-2">
+                                    {{ form.valider.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'detail_cours_etudiant' travail.cours.idc %}" 
+                               class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-1"></i> Retour
+                            </a>
+                            {% if soumission.fichier_soumis or travail.date_limite < now %}
+                                <button type="submit" class="btn btn-success" disabled>
+                                    <i class="fas fa-paper-plane me-1"></i> Terminé
+                                </button>
+                            {% else %}
+                                <button type="submit" class="btn btn-success">
+                                    <i class="fas fa-paper-plane me-1"></i> Soumettre
+                                </button>
+                            {% endif %}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

@@ -43,7 +43,18 @@ class Cours(models.Model):
     description = models.TextField()
     statut = models.CharField(max_length=20, choices=STATUT_CHOICES, default='actif')
     utilisateur = models.ForeignKey(Utilisateur, on_delete=models.CASCADE, related_name='cours')
-    
+    def progression(self, etudiant):
+        sections_total = self.sections.count()
+        if sections_total == 0:
+            return 0
+
+        sections_vues = SectionVue.objects.filter(
+            etudiant=etudiant,
+            section__cours=self
+        ).count()
+
+        return int((sections_vues / sections_total) * 100)
+
     def __str__(self):
         return f"{self.titre} - {self.statut}"
 
@@ -76,7 +87,7 @@ class Travail(models.Model):
         ('actif', 'Actif'),
         ('archive', 'Archivé'),
     ]
-    
+
     idT = models.CharField(max_length=100, primary_key=True)
     titre = models.CharField(max_length=200)
     description = models.TextField()
@@ -98,7 +109,8 @@ class Soumission(models.Model):
         ('corrige', 'Corrigé'),
         ('note', 'Noté'),
     ]
-    
+    fichier_soumis = models.BooleanField(default=False)  # Ajoutez ce champ si vous n'avez pas déjà une logique similaire.
+
     ids = models.CharField(max_length=100, primary_key=True)
     fichier = models.FileField(upload_to='soumissions/')
     date_soumission = models.DateTimeField(default=timezone.now)
@@ -108,7 +120,7 @@ class Soumission(models.Model):
     commentaire = models.TextField(blank=True)
     travail = models.ForeignKey(Travail, on_delete=models.CASCADE, related_name='soumissions')
     etudiant = models.ForeignKey(Utilisateur, on_delete=models.CASCADE, related_name='soumissions')
-
+    valide = models.BooleanField(default=False, verbose_name="Validé par l'étudiant")
     def __str__(self):
         return f"Soumission {self.ids} - {self.etat}"
 
@@ -117,6 +129,9 @@ class Soumission(models.Model):
         if self.date_soumission > self.travail.date_limite:
             self.etat = 'en_retard'
         super().save(*args, **kwargs)
+    
+    def __str__(self):
+        return f"Soumission {self.ids} - {'Validée' if self.valide else 'Non validée'}"
 
 
 
@@ -143,3 +158,10 @@ class Paiement(models.Model):
     def __str__(self):
         return f"Paiement {self.idp} - {self.montant}"
     
+class SectionVue(models.Model):
+    etudiant = models.ForeignKey(Utilisateur, on_delete=models.CASCADE)
+    section = models.ForeignKey(Section, on_delete=models.CASCADE)
+    date_vue = models.DateTimeField(auto_now_add=True)
+@property
+def progression(self):
+    sections_total = self.Sections.count()

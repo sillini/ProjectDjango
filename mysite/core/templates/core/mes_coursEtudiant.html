@@ -1,0 +1,177 @@
+{% extends 'core/baseEtudiant.html' %}
+{% block title %}Mes Cours Inscrits{% endblock %}
+
+{% block content %}
+<style>
+    .card-cours {
+        transition: all 0.3s ease;
+        border: none;
+        border-radius: 12px;
+        overflow: hidden;
+        height: 100%;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+    .card-cours:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+    }
+    .card-img-container {
+        height: 160px;
+        background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .card-img-container i {
+        font-size: 4rem;
+        color: #2E7D32;
+        opacity: 0.9;
+    }
+    .badge-statut {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 5px 10px;
+        border-radius: 50px;
+    }
+    .badge-actif {
+        background-color: #2E7D32;
+        color: white;
+    }
+    .badge-inactif {
+        background-color: #757575;
+        color: white;
+    }
+    .card-body {
+        padding: 1.5rem;
+    }
+    .card-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+        color: #263238;
+    }
+    .card-text {
+        color: #546E7A;
+        margin-bottom: 1.25rem;
+    }
+    .enseignant-info {
+        display: flex;
+        align-items: center;
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 1px solid #EEEEEE;
+    }
+    .enseignant-info i {
+        margin-right: 10px;
+        color: #2E7D32;
+    }
+    .enseignant-nom {
+        font-weight: 500;
+        color: #37474F;
+    }
+    .btn-accueil {
+        background-color: #2E7D32;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-weight: 500;
+        transition: all 0.3s;
+    }
+    .btn-accueil:hover {
+        background-color: #1B5E20;
+        transform: translateY(-2px);
+        color: white;
+    }
+    .empty-state {
+        padding: 4rem 2rem;
+        text-align: center;
+        background-color: #FAFAFA;
+        border-radius: 12px;
+        margin-top: 2rem;
+    }
+    .empty-state i {
+        font-size: 4rem;
+        color: #BDBDBD;
+        margin-bottom: 1.5rem;
+    }
+    .progress-container {
+        margin-top: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    .progress-text {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.5rem;
+        font-size: 0.85rem;
+        color: #546E7A;
+    }
+</style>
+
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-5">
+        <h1 class="mb-0"><i class="fas fa-bookmark me-3"></i>Mes Cours</h1>
+        <a href="{% url 'cours_disponibles' %}" class="btn btn-accueil">
+            <i class="fas fa-plus-circle me-2"></i> Trouver d'autres cours
+        </a>
+    </div>
+
+    {% if cours_inscrits %}
+    <div class="row g-4">
+        {% for cours in cours_inscrits %}
+        <div class="col-lg-4 col-md-6">
+            <div class="card card-cours h-100">
+                <div class="card-img-container position-relative">
+                    <i class="fas fa-graduation-cap"></i>
+                    <span class="badge-statut {% if cours.statut == 'actif' %}badge-actif{% else %}badge-inactif{% endif %}">
+                        {{ cours.get_statut_display }}
+                    </span>
+                </div>
+                <div class="card-body">
+                    <h3 class="card-title">{{ cours.titre }}</h3>
+                    <p class="card-text">{{ cours.description|truncatewords:20 }}</p>
+                    
+                    <div class="progress-container">
+                        <div class="progress-text">
+                            <span>Progression</span>
+                            <span>{{ cours.progression }}%</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-success" role="progressbar" 
+                                 style="width: {{ cours.progression }}%"
+                                 aria-valuenow="{{ cours.progression }}" 
+                                 aria-valuemin="0" 
+                                 aria-valuemax="100"></div>
+                        </div>
+                    </div>
+                    <div class="enseignant-info">
+                        <i class="fas fa-chalkboard-teacher"></i>
+                        <div>
+                            <span class="enseignant-nom d-block">{{ cours.utilisateur.nom }}</span>
+                            <small class="text-muted">{{ cours.utilisateur.get_specialite_display }}</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-white border-0 pt-0">
+                    <a href="{% url 'detail_cours_etudiant' cours.idc %}" class="btn btn-outline-success w-100">
+                        <i class="fas fa-arrow-right me-2"></i> Accéder au cours
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <i class="fas fa-book-open"></i>
+        <h3 class="mb-3">Vous n'êtes inscrit à aucun cours</h3>
+        <p class="text-muted mb-4">Parcourez les cours disponibles et commencez votre apprentissage !</p>
+        <a href="{% url 'cours_disponibles' %}" class="btn btn-accueil">
+            <i class="fas fa-search me-2"></i> Explorer les cours
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
